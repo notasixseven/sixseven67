@@ -1,11 +1,34 @@
-class ID:
-    def __init__(self,name,lastname,age):
-        self.name=name
-        self.lastname=lastname
-        self.age=age
-    def get_info(self):
-        print(f"{self.name} {self.lastname} {self.age}")
-nik=ID('nia',"zauk", 16)
-nik.get_info()
-nik1=ID('nып',"пk", 6)
-nik1.get_info()
+import requests
+from bs4 import BeautifulSoup
+
+KEYWORDS = ['дизайн', 'фото', 'web', 'python']
+
+
+def parse_habr():
+    url = 'https://habr.com/ru/articles/'
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    articles = soup.find_all('article')
+
+    for article in articles:
+        title_tag = article.find('a', class_='tm-title__link')
+        if not title_tag:
+            continue
+
+        title = title_tag.get_text(strip=True)
+        link = 'https://habr.com' + title_tag['href']
+
+        date_tag = article.find('time')
+        date = date_tag.get_text(strip=True) if date_tag else ''
+
+        text = article.get_text()
+
+        for keyword in KEYWORDS:
+            if keyword.lower() in text.lower():
+                print(f"{date} – {title} – {link}")
+                break
+
+
+if __name__ == '__main__':
+    parse_habr()
